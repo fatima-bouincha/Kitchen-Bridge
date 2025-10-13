@@ -1,0 +1,62 @@
+stages:
+  - build
+  - test
+  - release
+variables:
+  IMAGE_NAME: 'kitchen-bridge'
+  IMAGE_TAG: 'v1'
+  DOCKER_USERNAME: 'bouinchafatima'
+  DOCKER_PASSWORD: 'Cloud1+2fatima'
+  HOST_PORT: 80
+  CONTAINER_PORT: 80
+  SERVER_USERNAME: 'ubuntu'
+
+  # BUILD THE IMAGE
+Build:
+  stage: build
+  image: docker:latest
+  services:
+    - name: docker:dind
+      alias: docker
+  script:
+    - docker build --no-cache -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker save -o mini-projet-gitlab.tar $IMAGE_NAME:$IMAGE_TAG
+  artifacts:
+    paths:
+      - mini-projet-gitlab.tar
+
+# test
+.test_templates: &test_templates
+  stage: test
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - docker load -i mini-projet-gitlab.tar
+    - docker run --rm -dp $HOST_PORT:$CONTAINER_PORT --name $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG
+
+
+Test:
+  stage: test
+  image: docker:latest
+  services:
+    - name: docker:dind
+      alias: docker
+  <<: *test_templates
+
+.release_image: &release_image
+  stage: release
+  script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - docker load -i mini-projet-gitlab.tar
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+    - docker push $DOCKER_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+
+Release image:
+  stage: release
+  image: docker:latest
+  services:
+    - name: docker:dind
+      alias: docker
+  <<: *release_image
+
+

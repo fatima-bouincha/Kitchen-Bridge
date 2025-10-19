@@ -6,7 +6,7 @@ variables:
   IMAGE_NAME: 'kitchen-bridge'
   IMAGE_TAG: 'v1'
   DOCKER_USERNAME: 'bouinchafatima'
-  DOCKER_PASSWORD: 'Cloud1+2fatima'
+  DOCKER_PASSWORD: 'Cla'
   HOST_PORT: 80
   CONTAINER_PORT: 80
   SERVER_USERNAME: 'ubuntu'
